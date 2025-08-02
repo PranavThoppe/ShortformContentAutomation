@@ -1,0 +1,184 @@
+{
+  "name": "YouTubeShortsMakerV2",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-940, 0],
+      "id": "c5e36c8f-da0b-43fe-8dec-2b4c72c990c5",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "name": "audio.mp3",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "={{ $('Create Resources Folder').item.json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [120, 580],
+      "id": "bd551b60-1d96-42a3-a1db-5f5189f84457",
+      "name": "Upload Audio"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [340, 580],
+      "id": "6dc159ee-ef44-4e68-b503-46ad39f9de3c",
+      "name": "Download Audio"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/audio/transcriptions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.GROQ_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            { "name": "model", "value": "whisper-large-v3" },
+            { "name": "response_format", "value": "verbose_json" },
+            { "name": "timestamp_granularities[]", "value": "segment" },
+            { "name": "timestamp_granularities[]", "value": "word" },
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [540, 560],
+      "id": "4e40d482-79a0-4f50-9e0a-86923eb811d5",
+      "name": "Get Subtitle Info"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "wordarray",
+              "name": "Word timestamp Array",
+              "value": "={{ JSON.stringify($json.words, null, 2) }}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [760, 560],
+      "id": "79dff7fa-00bf-41eb-b3cf-6a6c4969356c",
+      "name": "Get Subtitle Information"
+    },
+    {
+      "parameters": {
+        "operation": "createFromText",
+        "content": "={{ $json[\"Word timestamp Array\"] }}",
+        "name": "WordTimestamps.txt",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "={{ $('Create Resources Folder').item.json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [1020, 560],
+      "id": "6090d6cf-1187-495c-be87-79f7fc634ee5",
+      "name": "Words Array Text File"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/audio/speech",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "Bearer {{ $env.GROQ_API_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "model", "value": "playai-tts" },
+            { "name": "input", "value": "={{ $('Story Generator').item.json.text }}" },
+            { "name": "voice", "value": "Cheyenne-PlayAI" }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-300, 500],
+      "id": "3680faa7-5d6f-4022-9108-2a5ebe0cad21",
+      "name": "Female Voice"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/audio/speech",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "Bearer {{ $env.GROQ_API_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "model", "value": "playai-tts" },
+            { "name": "input", "value": "={{ $('Story Generator').item.json.output.hook }}{{ $('Story Generator').item.json.output.story }}" },
+            { "name": "voice", "value": "Fritz-PlayAI" }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-260, 700],
+      "id": "ffacc4e4-217a-4fc5-803e-bdfba5feec6a",
+      "name": "Male Voice"
+    }
+  ],
+  "connections": {},
+  "active": false
+}

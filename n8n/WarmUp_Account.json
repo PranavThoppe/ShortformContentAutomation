@@ -1,0 +1,149 @@
+{
+  "name": "WarmUp Account",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "7cc9d5d4-34ae-47e6-b0fe-e83cdf1a6d10",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "url": "=https://www.googleapis.com/youtube/v3/search?part=id&type=video&q={{ $json.niche }}&maxResults=25&key=###############################",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        60
+      ],
+      "id": "a83f0060-b391-443e-9f32-9b6c76f4bb75",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8950ae6f-94d5-44d1-adb6-9a034d0aa5a9",
+              "name": "niche",
+              "value": "redditstory",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        80
+      ],
+      "id": "2a875de8-8364-4576-87e0-35f15e1cdd42",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "items",
+        "include": "={{ $json.items[0].id.videoId }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        640,
+        80
+      ],
+      "id": "af06df64-f958-4bc7-895b-ae6cb14a366f",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "operation": "rate",
+        "videoId": "={{ $json.items.id.videoId }}",
+        "rating": "like"
+      },
+      "type": "n8n-nodes-base.youTube",
+      "typeVersion": 1,
+      "position": [
+        860,
+        80
+      ],
+      "id": "bb3f0f3d-df95-4a32-a1a9-0352cdb41f63",
+      "name": "YouTube",
+      "credentials": {
+        "youTubeOAuth2Api": {
+          "id": "Ls6LTgf2aOvRehLO",
+          "name": "Subway Surfers"
+        }
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "YouTube",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6e46a888-2598-4cad-9672-3435f1ebdda7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cb76d3d9dc4549a9a423e878438ef57f1a1a0dc462e5d3f9f4e46fe6433dfae5"
+  },
+  "id": "buh9jZPu6YbI5OEh",
+  "tags": []
+}
