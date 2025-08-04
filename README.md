@@ -11,7 +11,7 @@ This project automates the full pipeline for generating YouTube Shorts from Redd
 
 ### Tech Stack
 - `n8n` for orchestration
-- `Python` for video processing and TTS
+- `Python` for video processing
 - `FFmpeg` for media editing
 - `Groq`, `Whisper`, `ElevenLabs` for AI-enhanced content
 
